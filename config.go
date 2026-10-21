@@ -1,0 +1,58 @@
+package main
+
+import (
+	"math/rand"
+)
+
+type cell struct {
+	x, y int
+}
+type Config struct {
+	grid           [][]bool
+	aliveLocations map[cell]struct{} // set of (x,y) tuples
+	history        [][][]bool
+	W, H           int
+}
+
+func genRandomGrid(W, H int) (grid [][]bool, aliveLocs map[cell]struct{}) {
+
+	// apparently this is how you init a matrix
+	grid = make([][]bool, H)
+	for i := 0; i < H; i++ {
+		grid[i] = make([]bool, W)
+	}
+
+	aliveLocs = make(map[cell]struct{})
+
+	for i := range W {
+		for j := range H {
+			if r := rand.Float64(); r > 0.8 {
+				grid[j][i] = true
+				aliveLocs[cell{x: i, y: j}] = struct{}{}
+			} else {
+				grid[j][i] = false
+			}
+
+		}
+	}
+	// grid = [][]bool{
+	// 	{false, false, false, false, false}, // y = 0
+	// 	{false, false, false, false, false}, // y = 1
+	// 	{false, true, true, true, false},    // y = 2 (Left: 1,2 | Center: 2,2 | Right: 3,2)
+	// 	{false, false, false, false, false}, // y = 3
+	// 	{false, false, false, false, false}, // y = 4
+	// }
+
+	// // 2. Initialize the set with the (x, y) tuples directly using a literal statement
+	// aliveLocs = map[cell]struct{}{
+	// 	{x: 1, y: 2}: {},
+	// 	{x: 2, y: 2}: {},
+	// 	{x: 3, y: 2}: {},
+	// }
+	return grid, aliveLocs
+}
+
+func NewConfig(W, H int) Config {
+	g, s := genRandomGrid(W, H)
+	return Config{grid: g, aliveLocations: s, history: [][][]bool{g}, W: W, H: H}
+}

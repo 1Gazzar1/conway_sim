@@ -2,24 +2,15 @@ package main
 
 // 'n' here means the count of alive cells around a point
 func aliveRules(n int) (alive bool) {
-	if n >= 4 {
-		return false
-	}
-	if n == 2 || n == 3 {
-		return true
-	}
-	return false
+	return n == 2 || n == 3
 
 }
 
 func deadRules(n int) (alive bool) {
-	if n == 3 {
-		return true
-	}
-	return false
+	return n == 3
 }
 
-func (cnf *config) countN(x, y int) (n int) {
+func (cnf *Config) countN(x, y int) (n int) {
 	H := len(cnf.grid)
 	W := len(cnf.grid[0])
 
@@ -42,7 +33,7 @@ func (cnf *config) countN(x, y int) (n int) {
 	return n
 }
 
-func (cnf *config) ApplyRules(x, y int) (alive bool) {
+func (cnf *Config) ApplyRules(x, y int) (alive bool) {
 	n := cnf.countN(x, y)
 	if cell := cnf.grid[y][x]; cell {
 		return aliveRules(n)
