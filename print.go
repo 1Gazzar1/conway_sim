@@ -12,7 +12,7 @@ func (cnf *Config) PrintGrid(deadValue, aliveValue string, frame [][]bool) {
 
 	for _, row := range frame {
 		for _, f := range row {
-			fmt.Print(" ")
+			fmt.Print("")
 			if f {
 				fmt.Print(string(aliveValue))
 			} else {
