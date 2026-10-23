@@ -63,10 +63,10 @@ func NewConfig(W, H int) Config {
 func (c *Config) getFrame(gen int) (frame [][]bool, found bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	if gen <= c.stIndex || gen > len(c.history)+c.stIndex {
 		return frame, false
 	}
-
 	return c.history[gen-1-c.stIndex], true
 }
 func (c *Config) writeToHistory(newFrame [][]bool) {

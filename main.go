@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -75,11 +76,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "right":
 			m.paused = true
 			frame, found := m.c.getFrame(m.curGen + 1)
-			if !found {
-				log.Fatal("couldn't get frame from config history")
+			if found {
+				m.grid = frame
+				m.curGen += 1
 			}
-			m.grid = frame
-			m.curGen += 1
 
 			if m.curGen > m.maxGen {
 				m.maxGen = m.curGen
@@ -90,21 +90,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "left":
 			m.paused = true
 			frame, found := m.c.getFrame(m.curGen - 1)
-			if !found {
-				log.Fatal("couldn't get frame from config history")
+			if found {
+				m.grid = frame
+				m.curGen -= 1
 			}
-			m.grid = frame
-			m.curGen -= 1
 		}
 
 	case tickMsg:
 		if !m.paused {
 			frame, found := m.c.getFrame(m.curGen + 1)
-			if !found {
-				log.Fatal("couldn't get frame from config history")
+			if found {
+				m.grid = frame
+				m.curGen += 1
 			}
-			m.grid = frame
-			m.curGen += 1
 
 			if m.curGen > m.maxGen {
 				m.maxGen = m.curGen
@@ -124,29 +122,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m model) View() tea.View {
-	s := ""
+	var b strings.Builder
+	b.Grow(m.c.W*m.c.H*3 + 128) // each emoji is 3 bytes in UTF-8
 	for _, row := range m.grid {
-		for _, f := range row {
-			if f {
-				s += "⬜"
+		for _, alive := range row {
+			if alive {
+				b.WriteString("⬜")
 			} else {
-				s += "⬛"
+				b.WriteString("⬛")
 			}
 		}
-		s += "\n"
+		b.WriteByte('\n')
 	}
-
-	// The footer
 
 	p := fmt.Sprint(m.speed)
 	if m.paused {
 		p = "PAUSED"
 	}
 
-	s += fmt.Sprintf("\nGeneration: %v · Speed: %v (generations/s) \n[Space] Pause · [+/-] Speed · [q] Quit", m.curGen, p)
+	fmt.Fprintf(&b, "\nGeneration: %v · Speed: %v (generations/s) \n[Space] Pause · [+/-] Speed · [q] Quit", m.curGen, p)
 
 	// Send the UI for rendering
-	return tea.NewView(s)
+	return tea.NewView(b.String())
 }
 func main() {
 	W, H := 80, 30
