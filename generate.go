@@ -16,8 +16,10 @@ func getLocationsToCheck(ogSet map[cell]struct{}, H, W int) (locationToCheck map
 	return locationToCheck
 }
 
-func (config *Config) GenerationsWorker(ch chan [][]bool) {
-	ch <- config.grid // initial grid
+func (config *Config) GenerationsWorker(signal chan struct{}) {
+	// send a signal
+	signal <- struct{}{}
+
 	for {
 
 		locationsToCheck := getLocationsToCheck(config.aliveLocations, config.H, config.W)
@@ -41,9 +43,9 @@ func (config *Config) GenerationsWorker(ch chan [][]bool) {
 
 		// swapping the current grid with the next one
 		config.grid = next
-		config.history = append(config.history, next)
+		config.writeToHistory(next)
 
-		ch <- next
-
+		// send a signal, meaning you're ahead by 1 more
+		signal <- struct{}{}
 	}
 }

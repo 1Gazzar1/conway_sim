@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"sync"
 )
 
 type cell struct {
@@ -12,6 +13,8 @@ type Config struct {
 	aliveLocations map[cell]struct{} // set of (x,y) tuples
 	history        [][][]bool
 	W, H           int
+	mu             *sync.Mutex
+	stIndex        int
 }
 
 func genRandomGrid(W, H int) (grid [][]bool, aliveLocs map[cell]struct{}) {
@@ -54,5 +57,28 @@ func genRandomGrid(W, H int) (grid [][]bool, aliveLocs map[cell]struct{}) {
 
 func NewConfig(W, H int) Config {
 	g, s := genRandomGrid(W, H)
-	return Config{grid: g, aliveLocations: s, history: [][][]bool{g}, W: W, H: H}
+	return Config{grid: g, aliveLocations: s, history: [][][]bool{g}, W: W, H: H, mu: &sync.Mutex{}}
+}
+
+func (c *Config) getFrame(gen int) (frame [][]bool, found bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if gen <= c.stIndex || gen > len(c.history)+c.stIndex {
+		return frame, false
+	}
+
+	return c.history[gen-1-c.stIndex], true
+}
+func (c *Config) writeToHistory(newFrame [][]bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.history = append(c.history, newFrame)
+
+	n := len(c.history)
+	if n > 200 {
+		removed := n - 200
+		c.history = c.history[removed:]
+		c.stIndex += removed
+	}
 }
