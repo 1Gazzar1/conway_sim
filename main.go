@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/mattn/go-runewidth"
+	"golang.org/x/term"
 )
 
 type model struct {
@@ -19,8 +22,13 @@ type model struct {
 	curGen   int
 	maxGen   int
 	paused   bool
+	out      cellTypes
+	margin   int
 }
-
+type cellTypes struct {
+	dead  string
+	alive string
+}
 type tickMsg time.Time
 
 func (m *model) updateInterval() {
@@ -34,7 +42,7 @@ func (m *model) updateSpeed(speed float64) {
 	m.updateInterval()
 }
 
-func initialModel(c *Config, ch chan struct{}) model {
+func initialModel(c *Config, ch chan struct{}, out cellTypes, margin int) model {
 	frame, found := c.getFrame(1)
 	if !found {
 		log.Fatal("couldn't get frame from config history")
@@ -46,6 +54,8 @@ func initialModel(c *Config, ch chan struct{}) model {
 		curGen:  1,
 		c:       c,
 		signals: ch,
+		out:     out,
+		margin:  margin,
 	}
 	m.updateInterval()
 	return m
@@ -123,13 +133,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 func (m model) View() tea.View {
 	var b strings.Builder
-	b.Grow(m.c.W*m.c.H*3 + 128) // each emoji is 3 bytes in UTF-8
+	b.Grow(m.c.W*m.c.H*4 + 128) // each emoji is 3-4 bytes in UTF-8
 	for _, row := range m.grid {
+		for range m.margin {
+			b.WriteString(" ")
+		}
 		for _, alive := range row {
 			if alive {
-				b.WriteString("⬜")
+				b.WriteString(m.out.alive)
 			} else {
-				b.WriteString("⬛")
+				b.WriteString(m.out.dead)
 			}
 		}
 		b.WriteByte('\n')
@@ -146,20 +159,48 @@ func (m model) View() tea.View {
 	return tea.NewView(b.String())
 }
 func main() {
-	W, H := 80, 30
-	// interval := 300 * time.Millisecond
-	config := NewConfig(W, H)
+	W := flag.Int("w", 30, "width of the grid")
+	H := flag.Int("h", 20, "height of the grid")
+	a := flag.String("a", "⬜", "value of alive cell in the grid")
+	d := flag.String("d", "⬛", "value of dead cell in the grid")
+
+	flag.Parse()
+
+	// height is the same whether it's ASCII or UTF-8 (emoji)
+	// width differes, an emoji is wider than a english language letter
+	// look "xx"
+	// look "🤡"
+
+	if runewidth.StringWidth(*a) != runewidth.StringWidth(*d) {
+		fmt.Println("Please use characters of the same width, e.g. '⬜' and '⬛' or '.' and 'x' ")
+		os.Exit(1)
+	}
+	w, h, err := term.GetSize(int(os.Stdin.Fd())) // the width and height of the terminal used
+
+	if err != nil {
+		fmt.Printf("something went wrong, couldn't get terminal size, err: %v", err)
+		os.Exit(1)
+	}
+	cellLen := runewidth.StringWidth(*a)
+
+	if *W*cellLen > w || *H > h {
+		fmt.Printf("There's isn't enough space to show the grid, chose smaller w,h or smaller a,d or make your terminal bigger!")
+		os.Exit(1)
+	}
+	wMargin := (w - *W*cellLen) / 2 // normal amount of size so like this: " ", not 2 characters wide
+
+	config := NewConfig(*W, *H)
 	signals := make(chan struct{}, 100) // 100 buffred channel
 
 	go config.GenerationsWorker(signals)
 
-	p := tea.NewProgram(initialModel(&config, signals))
+	p := tea.NewProgram(initialModel(&config, signals, cellTypes{
+		dead:  *d,
+		alive: *a,
+	}, wMargin))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
-	// for frame := range frames {
-	// 	config.PrintGrid("⬛", "⬜", frame)
-	// 	time.Sleep(interval)
-	// }
+
 }
