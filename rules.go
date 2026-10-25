@@ -10,10 +10,7 @@ func deadRules(n int) (alive bool) {
 	return n == 3
 }
 
-func (cnf *Config) countN(x, y int) (n int) {
-	H := len(cnf.history[0])
-	W := len(cnf.history[0][0])
-
+func countN(prev [][]bool, W, H, x, y int) (n int) {
 	for i := -1; i < 2; i++ {
 		for j := -1; j < 2; j++ {
 			if i == 0 && j == 0 { // don't count the cell itself
@@ -25,7 +22,7 @@ func (cnf *Config) countN(x, y int) (n int) {
 			// the +H and +W handles when a cell is at the very start, so 0 => -1 => 2 ( assuming H or W is 3 )
 			yAxis := (y + j + H) % H
 			xAxis := (x + i + W) % W
-			if cnf.history[len(cnf.history)-1][yAxis][xAxis] {
+			if prev[yAxis][xAxis] {
 				n += 1
 			}
 		}
@@ -34,8 +31,9 @@ func (cnf *Config) countN(x, y int) (n int) {
 }
 
 func (cnf *Config) ApplyRules(x, y int) (alive bool) {
-	n := cnf.countN(x, y)
-	if cell := cnf.history[len(cnf.history)-1][y][x]; cell {
+	prev := cnf.history[len(cnf.history)-1]
+	n := countN(prev, cnf.W, cnf.H, x, y)
+	if cell := prev[y][x]; cell {
 		return aliveRules(n)
 	} else {
 		return deadRules(n)

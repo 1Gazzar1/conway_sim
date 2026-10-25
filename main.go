@@ -166,28 +166,37 @@ func main() {
 
 	flag.Parse()
 
+	if *W < 3 || *H < 3 {
+		fmt.Println("Your Width and Height have to be atleast 3.")
+		os.Exit(1)
+	}
 	// height is the same whether it's ASCII or UTF-8 (emoji)
 	// width differes, an emoji is wider than a english language letter
 	// look "xx"
 	// look "🤡"
+	lenA := runewidth.StringWidth(*a)
+	lenD := runewidth.StringWidth(*d)
 
-	if runewidth.StringWidth(*a) != runewidth.StringWidth(*d) {
+	if lenA == 0 || lenD == 0 {
+		fmt.Println("Enter valid characters and not empty ones!")
+		os.Exit(1)
+	}
+	if lenA != lenD {
 		fmt.Println("Please use characters of the same width, e.g. '⬜' and '⬛' or '.' and 'x' ")
 		os.Exit(1)
 	}
-	w, h, err := term.GetSize(int(os.Stdin.Fd())) // the width and height of the terminal used
+	w, h, err := term.GetSize(int(os.Stdout.Fd())) // the width and height of the terminal used
 
 	if err != nil {
 		fmt.Printf("something went wrong, couldn't get terminal size, err: %v", err)
 		os.Exit(1)
 	}
-	cellLen := runewidth.StringWidth(*a)
 
-	if *W*cellLen > w || *H > h {
+	if *W*lenA > w || *H+3 > h {
 		fmt.Printf("There's isn't enough space to show the grid, chose smaller w,h or smaller a,d or make your terminal bigger!")
 		os.Exit(1)
 	}
-	wMargin := (w - *W*cellLen) / 2 // normal amount of size so like this: " ", not 2 characters wide
+	wMargin := (w - *W*lenA) / 2 // normal amount of size so like this: " ", not 2 characters wide
 
 	config := NewConfig(*W, *H)
 	signals := make(chan struct{}, 100) // 100 buffred channel
