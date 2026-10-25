@@ -9,7 +9,6 @@ type cell struct {
 	x, y int
 }
 type Config struct {
-	grid           [][]bool
 	aliveLocations map[cell]struct{} // set of (x,y) tuples
 	history        [][][]bool
 	W, H           int
@@ -57,7 +56,7 @@ func genRandomGrid(W, H int) (grid [][]bool, aliveLocs map[cell]struct{}) {
 
 func NewConfig(W, H int) Config {
 	g, s := genRandomGrid(W, H)
-	return Config{grid: g, aliveLocations: s, history: [][][]bool{g}, W: W, H: H, mu: &sync.Mutex{}}
+	return Config{aliveLocations: s, history: [][][]bool{g}, W: W, H: H, mu: &sync.Mutex{}}
 }
 
 func (c *Config) getFrame(gen int) (frame [][]bool, found bool) {

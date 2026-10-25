@@ -41,8 +41,7 @@ func (config *Config) GenerationsWorker(signal chan struct{}) {
 			// fmt.Println(p.x, p.y, r)
 		}
 
-		// swapping the current grid with the next one
-		config.grid = next
+		// adding to the history 
 		config.writeToHistory(next)
 
 		// send a signal, meaning you're ahead by 1 more
