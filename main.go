@@ -198,7 +198,7 @@ func main() {
 	}
 	wMargin := (w - *W*lenA) / 2 // normal amount of size so like this: " ", not 2 characters wide
 
-	config := NewConfig(*W, *H)
+	config := NewConfig(*W, *H, "lwss")
 	signals := make(chan struct{}, 100) // 100 buffred channel
 
 	go config.GenerationsWorker(signals)
