@@ -2,9 +2,7 @@
 
 Conway's Game of Life in your terminal, written in Go with [Bubble Tea](https://github.com/charmbracelet/bubbletea). Pause it, change the speed, and step backwards and forwards through the last 200 generations.
 
-<!-- Put the random-grid demo here. GitHub renders .mp4 only when uploaded through its editor (drag it into the README editor), otherwise convert it to a gif. -->
-
-![random grid](./readme-assets/random.gif)
+<img src="./readme-assets/random.gif" alt="random grid" width="100%">
 
 ## Features
 
@@ -75,9 +73,9 @@ Presets are placed in a small padded grid, so `-w` and `-h` are ignored when you
 | :-----------------------------------: | :-------------------------------: |
 | ![glider](./readme-assets/glider.gif) | ![lwss](./readme-assets/lwss.gif) |
 
-|                Pulsar                 |
-| :-----------------------------------: |
-| ![pulsar](./readme-assets/pulsar.gif) |
+|                                               Pulsar                                                |
+| :-------------------------------------------------------------------------------------------------: |
+| <img style="display:block;margin:auto;" src="./readme-assets/pulsar.gif" alt="pulsar" width="100%"> |
 
 ## How it works
 
