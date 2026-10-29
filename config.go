@@ -37,20 +37,7 @@ func genRandomGrid(W, H int) (grid [][]bool, aliveLocs map[cell]struct{}) {
 
 		}
 	}
-	// grid = [][]bool{
-	// 	{false, false, false, false, false}, // y = 0
-	// 	{false, false, false, false, false}, // y = 1
-	// 	{false, true, true, true, false},    // y = 2 (Left: 1,2 | Center: 2,2 | Right: 3,2)
-	// 	{false, false, false, false, false}, // y = 3
-	// 	{false, false, false, false, false}, // y = 4
-	// }
 
-	// // 2. Initialize the set with the (x, y) tuples directly using a literal statement
-	// aliveLocs = map[cell]struct{}{
-	// 	{x: 1, y: 2}: {},
-	// 	{x: 2, y: 2}: {},
-	// 	{x: 3, y: 2}: {},
-	// }
 	return grid, aliveLocs
 }
 
