@@ -54,20 +54,8 @@ func genRandomGrid(W, H int) (grid [][]bool, aliveLocs map[cell]struct{}) {
 	return grid, aliveLocs
 }
 
-func NewConfig(W, H int, preset string) Config {
-	g := make([][]bool, 0)
-	s := make(map[cell]struct{}, 0)
-	w, h := 0, 0
-	if grid, exists := PresetMap[preset]; exists {
-		g = grid
-		s = getInitPresetAliveLocsSet(grid)
-		h = len(grid)
-		w = len(grid[0])
-	} else {
-		g, s = genRandomGrid(W, H)
-		w, h = W, H
-	}
-	return Config{aliveLocations: s, history: [][][]bool{g}, W: w, H: h, mu: &sync.Mutex{}}
+func NewConfig(W, H int, grid [][]bool, initPos map[cell]struct{}) Config {
+	return Config{aliveLocations: initPos, history: [][][]bool{grid}, W: W, H: H, mu: &sync.Mutex{}}
 }
 
 func (c *Config) getFrame(gen int) (frame [][]bool, found bool) {
